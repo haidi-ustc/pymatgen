@@ -1301,6 +1301,29 @@ class Kpoints(MSONable):
         return Kpoints(comment, num_kpts, style, [num_div], [0, 0, 0])
 
     @staticmethod
+    def automatic_density_by_kspacing(structure,ksp,force_gamma=False):
+        """
+        Returns an automatic Kpoint object based on k-spacing value.
+        Args:
+            structure (Structure): Input structure
+            ksp (fload): k-spacing 
+            force_gamma (bool): Force a gamma centered mesh
+
+        Returns:
+            Kpoints
+        """
+        if type(ksp) is not list:
+           ksp=[ksp,ksp,ksp]
+        else:
+           assert(len(ksp)==3)
+        r_abc=structure.lattice.reciprocal_lattice.abc
+        kpts=[max(1,(np.ceil(ii/ks).astype(int))) for ii,ks in zip(r_abc,ksp)] 
+        if force_gamma:
+           return Kpoints.gamma_automatic(kpts=kpts)
+        else:
+           return Kpoints.monkhorst_automatic(kpts=kpts)
+
+    @staticmethod
     def automatic_density_by_vol(structure, kppvol, force_gamma=False):
         """
         Returns an automatic Kpoint object based on a structure and a kpoint
